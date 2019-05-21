@@ -1,0 +1,27 @@
+{
+  "name": "isoc_web_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Devil39/ISOC_Web_Project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Devil39/ISOC_Web_Project/issues"
+  },
+  "homepage": "https://github.com/Devil39/ISOC_Web_Project#readme",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "express": "^4.17.0",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.16.5",
+    "nodemon": "^1.19.0",
+    "pg": "^7.11.0"
+  }
+}
