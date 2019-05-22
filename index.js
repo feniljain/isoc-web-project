@@ -4,6 +4,15 @@ const bodyParser=require('body-parser');
 const bcrypt=require('bcrypt');
 const knex=require('knex');
 var jwt = require('jsonwebtoken');
+/*const knexfile = require('{path-of-your}/knexfile.js');
+const knex = require('knex')(knexfile);*/
+// create a knex instance
+/*const knex = require('knex')({
+    dialect: 'postgres'
+    // other params
+  });
+  const st = require('knex-postgis')(knex);
+  const sql = knex.select('id', st.asText('geom')).from('points').toString();*/
 
 app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({extended: }));
@@ -35,6 +44,20 @@ const generateToken=(user)=>
     //console.log(JSON.parse($window.localStorage.getItem("token:")));
  }
 
+/*const checkToken=(token)=>
+ {
+    jwt.verify(token, '+AsEcReT$!#PaTtErN-', function(err, decoded) {
+        //console.log("Verified! "+decoded.foo) // bar
+        if(!err)
+         {
+             return 1;
+         }
+        else {
+            return 0;
+        }
+      });
+ }*/
+
 app.get('/',(req,res)=>
  {
      res.send(db.users);
@@ -47,19 +70,43 @@ app.get('/checkToken',(req,res)=>
         //console.log("Verified! "+decoded.foo) // bar
         if(!err)
          {
-             res.json({
-                 "success": "true",
-                 "email": decoded.email
-             });
+            res.json({
+                "success": true,
+                "email": decoded.email
+            });
          }
         else {
             res.json({
-                "success": "false"
+                "success": false
             });
         }
       });
      //console.log(token);
  });//To be called upon by componentDidMount type of functions so that token is checked.
+
+app.post('/signin',(req,resp)=>
+ {
+     const {email, password}=req.body;
+    db.select('email','hash').from('login').where('email', '=', email).then(data=>{
+        bcrypt.compare(password,data[0].hash, function(err, res) {
+            // res === true
+            //console.log(data+" "+password+" "+res);
+            if(res===true)
+             {
+                 resp.json({
+                     "success": true,
+                     "email": data[0].email
+                 });
+             }
+            else {
+                resp.json({
+                    "success": false
+                })
+                //resp.json(data);
+            }
+         });
+     });
+ });
 
 app.post('/register', (req,res)=>
  {
@@ -78,8 +125,8 @@ app.post('/register', (req,res)=>
                         return trx('users').returning('*').insert({
                         name: name,
                         email: Email[0],
-                        friendrequests: '{"name":""}',
-                        messages: '{"name":"", "message":""}',
+                        friendrequests: "[]",
+                        messages: '{"name": [], "message": []}',
                         joined: new Date()
                     }).then(user=>{
                             var token=generateToken(user[user.length-1]);
@@ -98,10 +145,64 @@ app.post('/register', (req,res)=>
     });
  });
 
+const update=(email,arr)=>
+ {
+    db('users')
+    .where('email', email)
+    .update({
+        //name: 'Dhruv'
+        friendrequests: arr
+    }).then(()=>{console.log("Done!")})
+ }
+
+app.post('/friendrequests',(req,res)=>{
+    const {name,email}=req.body;
+    var arr; 
+    //console.log(name[1]);
+    /*db('users').select 
+    .where('email', '=', email)*/
+
+    /*db.select('*').from('users')
+    .where('email', '=', email)
+    .then(data=>{
+        //console.log(data);
+        data[0].friendrequests.push(name);
+        res.json("Friend Request from "+name[0]+" to "+name[1]);
+    });*/
+
+    db('users')
+        .where('email', email)
+        .then(function (user) {//Fetching correct user.
+            user[0].friendrequests.push(name[0]);
+            arr=user[0].friendrequests;
+            console.log(user[0].friendrequests);
+        });
+    
+    console.log(arr);
+
+    setTimeout(update(email,arr), 1000);
+    res.json("Done!");
+    /*.then(user=>{
+        if(user[0].friendrequests.name.length==0)
+         {
+            user[0].friendrequests.name=[];
+            user[0].friendrequests.name.push(name);
+
+         }
+        else {
+            user[0].friendrequestame.push(name);
+        }
+        a=user[0].friendrequests.name.push(name);
+        return(user);
+    })*/
+    //res.json(user[0].friendrequests.name);
+    //res.json("Done!");
+});
+
 app.listen(8010, function(err)
  {
      if(!err)
       {
           console.log("Listening on port 8010");
       }
- });
+ });        
