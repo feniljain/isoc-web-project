@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Devil39/ISOC_Web_Project#readme",
   "dependencies": {
+    "@sendgrid/mail": "^6.4.0",
     "bcrypt": "^3.0.6",
     "bluebird": "^3.5.4",
     "express": "^4.17.0",
