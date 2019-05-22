@@ -6,18 +6,7 @@ const knex=require('knex');
 var jwt = require('jsonwebtoken');
 const Promise = require('bluebird');
 
-/*const knexfile = require('{path-of-your}/knexfile.js');
-const knex = require('knex')(knexfile);*/
-// create a knex instance
-/*const knex = require('knex')({
-    dialect: 'postgres'
-    // other params
-  });
-  const st = require('knex-postgis')(knex);
-  const sql = knex.select('id', st.asText('geom')).from('points').toString();*/
-
 app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({extended: }));
 
 const db=knex({
     client: 'pg',
@@ -29,21 +18,11 @@ const db=knex({
     }
   });
 
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImRocnV2QGdtYWlsLmNvbSIsImlhdCI6MTU1ODQ0ODY2NiwiZXhwIjoxNTU4NTM1MDY2fQ.izNTJbhhvlmVGgoHhWbq53bueppF-DYePsN_Y5Gs5L8
-
-/*db.select('*').from('login').then(data=>{
-    console.log(data)
-});*/
-
 const generateToken=(user)=>
  {
-    //console.log(user);
     const email=user.email;
     const token=jwt.sign({email}, '+AsEcReT$!#PaTtErN-', { expiresIn: '24h' });
-    //console.log(token);
-    //localStorage.setItem("token", token);
     return(token);
-    //console.log(JSON.parse($window.localStorage.getItem("token:")));
  }
 
 /*const checkToken=(token)=>
@@ -69,7 +48,6 @@ app.get('/checkToken',(req,res)=>
  {
      const {token}=req.body;
      jwt.verify(token, '+AsEcReT$!#PaTtErN-', function(err, decoded) {
-        //console.log("Verified! "+decoded.foo) // bar
         if(!err)
          {
             res.json({
@@ -83,7 +61,6 @@ app.get('/checkToken',(req,res)=>
             });
         }
       });
-     //console.log(token);
  });//To be called upon by componentDidMount type of functions so that token is checked.
 
 app.post('/signin',(req,resp)=>
@@ -91,8 +68,6 @@ app.post('/signin',(req,resp)=>
      const {email, password}=req.body;
     db.select('email','hash').from('login').where('email', '=', email).then(data=>{
         bcrypt.compare(password,data[0].hash, function(err, res) {
-            // res === true
-            //console.log(data+" "+password+" "+res);
             if(res===true)
              {
                  resp.json({
@@ -152,65 +127,73 @@ const update= async (email,arr) => {
         db('users')
         .where('email', email)
         .update({
-            //name: 'Dhruv'
-            friendrequests: arr
-        }).then(()=>{resolve("Done!")})
+            friendrequests: JSON.stringify(arr)
+        }).then(()=>{resolve()})
     })
  }
 
-app.post('/friendrequests',async (req,res)=>{
+app.put('/friendrequests',async (req,res)=>{
     const {name,email}=req.body;
-    var arr; 
-    //console.log(name[1]);
-    /*db('users').select 
-    .where('email', '=', email)*/
-
-    /*db.select('*').from('users')
-    .where('email', '=', email)
-    .then(data=>{
-        //console.log(data);
-        data[0].friendrequests.push(name);
-        res.json("Friend Request from "+name[0]+" to "+name[1]);
-    });*/
-
+    var arr;
     const promise1 = new Promise((resolve, reject) => {
-
         db('users')
         .where('email', email)
         .then(function (user) {//Fetching correct user.
             user[0].friendrequests.push(name[0]);
             arr=user[0].friendrequests;
-            console.log(user[0].friendrequests);
             resolve();
         });
     })
-    
-    console.log(arr);
 
     const result1 = await promise1;
 
     const updateResult = await update(email, arr);
-
-    console.log(updateResult)
-
-    //setTimeout(, 1000);
-    // res.json("Done!");
-    /*.then(user=>{
-        if(user[0].friendrequests.name.length==0)
-         {
-            user[0].friendrequests.name=[];
-            user[0].friendrequests.name.push(name);
-
-         }
-        else {
-            user[0].friendrequestame.push(name);
-        }
-        a=user[0].friendrequests.name.push(name);
-        return(user);
-    })*/
-    //res.json(user[0].friendrequests.name);
-    //res.json("Done!");
+    res.json("Done!");
 });
+
+const updatemessages= async (email,arr) => {
+    return new Promise((resolve, reject) => {
+        db('users')
+        .where('email', email)
+        .update({
+            messages: JSON.stringify(arr)
+        }).then(()=>{resolve()})
+    })
+ }
+
+app.put('/messages',async (req,res)=>
+{
+    const {name,email,message}=req.body;
+    var arr;
+    const promise1 = new Promise((resolve, reject) => {
+        db('users')
+        .where('email', email)
+        .then(function (user) {//Fetching correct user.
+            user[0].messages.name.push(name[0]);
+            user[0].messages.message.push(message);
+            arr=user[0].messages;
+            resolve();
+        });
+    })
+
+    const result1 = await promise1;
+
+    const updateResult = await updatemessages(email, arr);
+    res.json("Done!");
+});
+
+app.get('/profile',(req,res)=>
+ {
+     const {email} = req.body;
+     db('users')
+     .select('*')
+     .where('email',email)
+     .then(user=>{
+         res.json(user[0]);
+        }).catch(err=>{
+            res.json("No such user exists!");
+        });
+ });
 
 app.listen(8010, function(err)
  {
