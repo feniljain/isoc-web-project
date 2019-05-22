@@ -152,7 +152,7 @@ const update= async (email,arr) => {
         db('users')
         .where('email', email)
         .update({
-            //name: 'Dhruv'
+            name: 'Dhruv',
             friendrequests: arr
         }).then(()=>{resolve("Done!")})
     })
