@@ -4,6 +4,8 @@ const bodyParser=require('body-parser');
 const bcrypt=require('bcrypt');
 const knex=require('knex');
 var jwt = require('jsonwebtoken');
+const Promise = require('bluebird');
+
 /*const knexfile = require('{path-of-your}/knexfile.js');
 const knex = require('knex')(knexfile);*/
 // create a knex instance
@@ -145,17 +147,18 @@ app.post('/register', (req,res)=>
     });
  });
 
-const update=(email,arr)=>
- {
-    db('users')
-    .where('email', email)
-    .update({
-        //name: 'Dhruv'
-        friendrequests: arr
-    }).then(()=>{console.log("Done!")})
+const update= async (email,arr) => {
+    return new Promise((resolve, reject) => {
+        db('users')
+        .where('email', email)
+        .update({
+            //name: 'Dhruv'
+            friendrequests: arr
+        }).then(()=>{resolve("Done!")})
+    })
  }
 
-app.post('/friendrequests',(req,res)=>{
+app.post('/friendrequests',async (req,res)=>{
     const {name,email}=req.body;
     var arr; 
     //console.log(name[1]);
@@ -170,18 +173,28 @@ app.post('/friendrequests',(req,res)=>{
         res.json("Friend Request from "+name[0]+" to "+name[1]);
     });*/
 
-    db('users')
+    const promise1 = new Promise((resolve, reject) => {
+
+        db('users')
         .where('email', email)
         .then(function (user) {//Fetching correct user.
             user[0].friendrequests.push(name[0]);
             arr=user[0].friendrequests;
             console.log(user[0].friendrequests);
+            resolve();
         });
+    })
     
     console.log(arr);
 
-    setTimeout(update(email,arr), 1000);
-    res.json("Done!");
+    const result1 = await promise1;
+
+    const updateResult = await update(email, arr);
+
+    console.log(updateResult)
+
+    //setTimeout(, 1000);
+    // res.json("Done!");
     /*.then(user=>{
         if(user[0].friendrequests.name.length==0)
          {
