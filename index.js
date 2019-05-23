@@ -111,7 +111,7 @@ app.post('/register', (req,res)=>
                         joined: new Date()
                     }).then(user=>{
                             var token=generateToken(user[user.length-1]);
-                            sgMail.setApiKey('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');
+                            sgMail.setApiKey(process.env.sendGridApiKey);
                             const msg = {
                             to: user[user.length-1].email,
                             from: 'test@example.com',
