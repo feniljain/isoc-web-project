@@ -9,9 +9,6 @@ const sgMail = require('@sendgrid/mail')
 
 app.use(bodyParser.json());
 
-//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
-//Second: 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
-
 const db=knex({
     client: 'pg',
     connection: {
